@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - fork/*
+      - master
   pull_request:
     branches:
       - fork/*
+      - master
 
 env:
   CTEST_OUTPUT_ON_FAILURE: 1
