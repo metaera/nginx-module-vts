@@ -57,6 +57,8 @@ jobs:
           ls -latr
           ./configure --with-compat --add-dynamic-module=..
           make modules
+          ls -latr objs
+
 
       - name: Debug
         run: |
