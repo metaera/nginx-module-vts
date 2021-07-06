@@ -48,7 +48,13 @@ jobs:
 
       - name: Compile Module
         run: |
+          pwd
+          ls -latr
+          cp ./configure ./nginx/configure
           cd nginx
+          chmod +x ./configure
+          pwd
+          ls -latr
           ./configure --with-compat --add-dynamic-module=..
           make modules
 
