@@ -72,7 +72,7 @@ jobs:
         id: get_release
         uses: bruceadams/get-release@v1.2.2
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release asset - nginx/objs/ngx_http_vhost_traffic_status_module-nginx-${{ matrix.nginx }}.so
         if: github.ref == 'refs/heads/master'
