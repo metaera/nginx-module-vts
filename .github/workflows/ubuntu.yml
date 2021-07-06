@@ -18,7 +18,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'ci osx') && !contains(github.event.head_commit.message, 'ci win')"
     
     runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        nginx: [ '1.21.0', '1.21.1' ]
     steps:
 
       - name: Checkout module
@@ -33,6 +35,7 @@ jobs:
         with:
           repository: 'nginx/nginx'   #release-1.21.1
           path: 'nginx'
+          ref: 'release-${{ matrix.node }}'
           submodules: true
           lfs: true
           fetch-depth: 0
@@ -53,7 +56,7 @@ jobs:
           echo "GIT_RELEASE_NOTES="$(git log $(git describe --tags --abbrev=0 --always)..HEAD --pretty=format:"%h - %s (%an)<br>")"" >> $GITHUB_ENV
 
       - name: create release ${{ env.GIT_TAG }}
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && strategy.job-index == 0
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -73,6 +76,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ '/home/runner/work/nginx-module-vts/nginx-module-vts/nginx/objs/ngx_http_vhost_traffic_status_module.so' }}
-          asset_name: ${{ 'ngx_http_vhost_traffic_status_module.so' }}
+          asset_name: ${{ format('{0}{1}{2}', 'ngx_http_vhost_traffic_status_module-nginx-', matrix.node, '.so') }}
           asset_content_type: application/zip
 
