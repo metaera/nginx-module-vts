@@ -1,0 +1,89 @@
+name: Ubuntu
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: 1
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'ci osx') && !contains(github.event.head_commit.message, 'ci win')"
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+
+      - name: Checkout module
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          lfs: true
+          fetch-depth: 0
+
+      - name: Debug
+        run: |
+          pwd
+          ls -latr
+
+
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          repository: 'nginx/nginx'   #release-1.21.1
+          submodules: true
+          lfs: true
+          fetch-depth: 0
+
+      - name: Debug
+        run: |
+          pwd
+          ls -latr
+
+      - name: Compile Module
+        run: |
+          cd nginx
+          ./configure --with-compat --add-dynamic-module=..
+          make modules
+
+      - name: Debug
+        run: |
+          pwd
+          ls -latr
+
+      - name: Set env
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          echo "GIT_TAG_NAME=$(git describe --tag --always --long | sed -e 's/v\([0-9].*\).\([0-9].*\).\([0-9].*\)-\(.*\)-.*/\1.\2.\4/')" >> $GITHUB_ENV
+          echo "GIT_TAG=$(git describe --tag --always --long | sed -e 's/\([0-9].*\).\([0-9].*\).\([0-9].*\)-\(.*\)-.*/\1.\2.\4/')" >> $GITHUB_ENV
+          echo "GIT_RELEASE_NOTES="$(git log $(git describe --tags --abbrev=0 --always)..HEAD --pretty=format:"%h - %s (%an)<br>")"" >> $GITHUB_ENV
+
+      - name: create release ${{ env.GIT_TAG }}
+        if: github.ref == 'refs/heads/master'
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.GIT_TAG }}
+          release_name: ${{ format('{0} {1} - {2}', '', env.GIT_TAG, 'Plugin') }}
+          body: ${{ env.GIT_RELEASE_NOTES }}
+          draft: false
+          prerelease: false
+
+      - name: upload release asset - nginx/objs/ngx_http_vhost_traffic_status_module.so
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ '/home/runner/work/nginx-module-vts/nginx-module-vts/nginx/objs/ngx_http_vhost_traffic_status_module.so' }}
+          asset_name: ${{ 'ngx_http_vhost_traffic_status_module.so' }}
+          asset_content_type: application/zip
+
