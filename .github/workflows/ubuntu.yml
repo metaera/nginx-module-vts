@@ -26,12 +26,6 @@ jobs:
           lfs: true
           fetch-depth: 0
 
-      - name: Debug
-        run: |
-          pwd
-          ls -latr
-
-
       - name: Checkout source
         uses: actions/checkout@v2
         with:
@@ -41,29 +35,13 @@ jobs:
           lfs: true
           fetch-depth: 0
 
-      - name: Debug
-        run: |
-          pwd
-          ls -latr
-
       - name: Compile Module
         run: |
-          pwd
-          ls -latr
           cp ./configure ./nginx/configure
           cd nginx
           chmod +x ./configure
-          pwd
-          ls -latr
           ./configure --with-compat --add-dynamic-module=..
           make modules
-          ls -latr objs
-
-
-      - name: Debug
-        run: |
-          pwd
-          ls -latr
 
       - name: Set env
         run: |
