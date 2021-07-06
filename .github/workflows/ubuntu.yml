@@ -55,7 +55,7 @@ jobs:
           echo "GIT_TAG=$(git describe --tag --always --long | sed -e 's/\([0-9].*\).\([0-9].*\).\([0-9].*\)-\(.*\)-.*/\1.\2\4/')" >> $GITHUB_ENV
           echo "GIT_RELEASE_NOTES="$(git log $(git describe --tags --abbrev=0 --always)..HEAD --pretty=format:"%h - %s (%an)<br>")"" >> $GITHUB_ENV
 
-      - name: create release ${{ env.GIT_TAG }}
+      - name: Create release ${{ env.GIT_TAG }}
         if: github.ref == 'refs/heads/master' && strategy.job-index == 0
         id: create_release
         uses: actions/create-release@v1
@@ -68,14 +68,20 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: upload release asset - nginx/objs/ngx_http_vhost_traffic_status_module-nginx-${{ matrix.nginx }}.so
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload release asset - nginx/objs/ngx_http_vhost_traffic_status_module-nginx-${{ matrix.nginx }}.so
         if: github.ref == 'refs/heads/master'
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: ${{ '/home/runner/work/nginx-module-vts/nginx-module-vts/nginx/objs/ngx_http_vhost_traffic_status_module.so' }}
           asset_name: ${{ format('{0}{1}{2}', 'ngx_http_vhost_traffic_status_module-nginx-', matrix.nginx, '.so') }}
-          asset_content_type: application/zip
+          asset_content_type: application/octet-stream
 
