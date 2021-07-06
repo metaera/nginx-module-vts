@@ -9,6 +9,8 @@ on:
     branches:
       - fork/*
       - master
+  release:
+    types: [created]
 
 env:
   CTEST_OUTPUT_ON_FAILURE: 1
