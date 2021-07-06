@@ -35,7 +35,7 @@ jobs:
         with:
           repository: 'nginx/nginx'   #release-1.21.1
           path: 'nginx'
-          ref: 'release-${{ matrix.node }}'
+          ref: 'release-${{ matrix.nginx }}'
           submodules: true
           lfs: true
           fetch-depth: 0
@@ -68,7 +68,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: upload release asset - nginx/objs/ngx_http_vhost_traffic_status_module.so
+      - name: upload release asset - nginx/objs/ngx_http_vhost_traffic_status_module-nginx-${{ matrix.nginx }}.so
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -76,6 +76,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ '/home/runner/work/nginx-module-vts/nginx-module-vts/nginx/objs/ngx_http_vhost_traffic_status_module.so' }}
-          asset_name: ${{ format('{0}{1}{2}', 'ngx_http_vhost_traffic_status_module-nginx-', matrix.node, '.so') }}
+          asset_name: ${{ format('{0}{1}{2}', 'ngx_http_vhost_traffic_status_module-nginx-', matrix.nginx, '.so') }}
           asset_content_type: application/zip
 
